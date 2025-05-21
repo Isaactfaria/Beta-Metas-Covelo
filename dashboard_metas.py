@@ -402,8 +402,15 @@ def formatar_mes_ano(data):
 # Função para formatar valores monetários
 def formatar_moeda(valor):
     if isinstance(valor, (int, float)):
-        return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return "{:,.2f}".format(valor).replace(",", "").replace(".", ",")
     return valor
+
+# Função auxiliar para formatar DataFrame com meses em português
+def formatar_dataframe(df):
+    if 'Mes' in df.columns:
+        # Ordena por data original
+        df = df.sort_values('Mes', ascending=False)
+    return df
 
 # Funções auxiliares (mantidas as mesmas)
 def load_data():
@@ -441,6 +448,16 @@ def load_data():
     # Garantir que as datas estão no mesmo formato
     metas['Mes'] = pd.to_datetime(metas['Mes']).dt.normalize()
     resultados['Mes'] = pd.to_datetime(resultados['Mes']).dt.normalize()
+    
+    # Formatar os DataFrames para exibir meses em português
+    metas = formatar_dataframe(metas)
+    resultados = formatar_dataframe(resultados)
+    
+    # Garantir que a coluna Mes_formatado existe em ambos os DataFrames
+    if 'Mes_formatado' not in metas.columns:
+        metas['Mes_formatado'] = metas['Mes'].apply(formatar_mes_ano)
+    if 'Mes_formatado' not in resultados.columns:
+        resultados['Mes_formatado'] = resultados['Mes'].apply(formatar_mes_ano)
     
     return metas, resultados
 
