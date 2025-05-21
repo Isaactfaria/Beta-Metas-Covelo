@@ -31,8 +31,8 @@ except locale.Error:
                     locale.setlocale(locale.LC_TIME, '')  # Usa o locale padrão do sistema
                 except locale.Error:
                     locale.setlocale(locale.LC_TIME, 'C')  # Fallback para locale padrão do sistema
-                    st.warning("Locale pt_BR não encontrado, usando padrão do sistema")
-                    st.info("Continuando com a configuração alternativa de meses em português")
+                    st.warning("Locale pt_BR não encontrado, usando sistema alternativo")
+                    st.info("Os meses serão exibidos em português usando o dicionário MESES_PT")
 
 # Dicionário de meses em português (solução alternativa)
 MESES_PT = {
@@ -41,22 +41,17 @@ MESES_PT = {
     9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
 }
 
-# Função para formatar data em português com fallback
+# Função para formatar data em português usando MESES_PT
 def formatar_mes_ano(data):
     try:
         # Garante que a data é um objeto datetime
         if not isinstance(data, pd.Timestamp):
             data = pd.to_datetime(data)
         
-        # Tenta usar locale para formatar a data
-        formatted = data.strftime('%B %Y').title()
-        
-        # Verifica se a formatação retornou em inglês (fallback)
-        if formatted.split()[0] not in MESES_PT.values():
-            return f"{MESES_PT[data.month]} {data.year}"
-        return formatted
-    except:
+        # Usa o dicionário MESES_PT para garantir que o mês sempre apareça em português
         return f"{MESES_PT[data.month]} {data.year}"
+    except:
+        return f"{MESES_PT.get(data.month, 'Mês Desconhecido')} {data.year}"
 
 # Configuração da página (já definida no início do script)
 
@@ -769,6 +764,6 @@ processar_dados()
 # Adicionar versão no rodapé
 st.markdown("""
 <div style='text-align: center; margin-top: 20px; color: #666; font-size: 12px;'>
-Versão 1.2.2.2
+Versão 1.2.2.3
 </div>
 """, unsafe_allow_html=True)
