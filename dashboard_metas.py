@@ -849,6 +849,6 @@ processar_dados()
 # Adicionar versão no rodapé
 st.markdown("""
 <div style='text-align: center; margin-top: 20px; color: #666; font-size: 12px;'>
-Versão 1.2.2.5
+Versão 1.2.2.4
 </div>
 """, unsafe_allow_html=True)
