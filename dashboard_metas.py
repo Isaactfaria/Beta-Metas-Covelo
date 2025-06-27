@@ -14,70 +14,121 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Configuração robusta do locale para português
-try:
-    # Tenta configurar o locale
-    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
-except locale.Error:
-    try:
-        locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
-    except locale.Error:
-        try:
-            locale.setlocale(locale.LC_TIME, 'Portuguese_Brazil')
-        except locale.Error:
-            try:
-                locale.setlocale(locale.LC_TIME, 'Portuguese')
-            except locale.Error:
-                try:
-                    locale.setlocale(locale.LC_TIME, '')  # Usa o locale padrão do sistema
-                except locale.Error:
-                    locale.setlocale(locale.LC_TIME, 'C')  # Fallback para locale padrão do sistema
-                    st.warning("Locale pt_BR não encontrado, usando sistema alternativo")
-                    st.info("Os meses serão exibidos em português usando o dicionário MESES_PT")
-
-# Dicionário de meses em português (solução alternativa)
-MESES_PT = {
-    1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
-    5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
-    9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+# Dados de usuários e senhas (em produção, esses dados devem ser armazenados de forma segura)
+USERS = {
+    'cristiano': 'C123456',
+    'dandara': 'D123456',
+    'adriana': 'A123456',
+    'carla': 'C123456'
 }
 
-# Função para formatar data em português usando MESES_PT
-def formatar_mes_ano(data):
-    try:
-        # Garante que a data é um objeto datetime
-        if not isinstance(data, pd.Timestamp):
-            data = pd.to_datetime(data)
-        
-        # Usa o dicionário MESES_PT para garantir que o mês sempre apareça em português
-        return f"{MESES_PT[data.month]} {data.year}"
-    except:
-        return f"{MESES_PT.get(data.month, 'Mês Desconhecido')} {data.year}"
+# Tela de login
+if not st.session_state.get('user_authenticated', False):
+    st.title('Sistema de Metas - Mercado Covelo')
+    
+    with st.form('login_form'):
+        st.markdown('### Faça login para continuar')
+        username = st.text_input('Usuário')
+        password = st.text_input('Senha', type='password')
+        submit = st.form_submit_button('Entrar')
 
-# Adicionar script de seleção automática para campos de número
-st.markdown("""
-<script>
-    // Função para selecionar o conteúdo do campo
-    function autoSelectInput(event) {
-        if (event.target.type === 'number') {
-            event.target.select();
-        }
+        if submit:
+            if username in USERS and password == USERS[username]:
+                st.success('Login realizado com sucesso!')
+                st.session_state['user_authenticated'] = True
+                st.session_state['username'] = username
+                st.rerun()
+            else:
+                st.error('Usuário ou senha incorretos')
+    
+    # Se não está autenticado, para aqui
+    st.stop()
+
+# Se chegou aqui, o usuário está autenticado
+st.title('Sistema de Metas - Mercado Covelo')
+
+# Mostrar nome do usuário logado
+st.sidebar.markdown(f"**Usuário:** {st.session_state['username']}")
+
+
+
+# Se o usuário está autenticado, mostra o dashboard
+if st.session_state.get('user_authenticated', False):
+    # Configuração robusta do locale para português
+    try:
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+    except locale.Error:
+        try:
+            locale.setlocale(locale.LC_TIME, 'pt_BR.utf8')
+        except locale.Error:
+            try:
+                locale.setlocale(locale.LC_TIME, 'Portuguese_Brazil')
+            except locale.Error:
+                try:
+                    locale.setlocale(locale.LC_TIME, 'Portuguese')
+                except locale.Error:
+                    try:
+                        locale.setlocale(locale.LC_TIME, '')
+                    except locale.Error:
+                        locale.setlocale(locale.LC_TIME, 'C')
+                        st.warning("Locale pt_BR não encontrado, usando sistema alternativo")
+                        st.info("Os meses serão exibidos em português usando o dicionário MESES_PT")
+
+    # Dicionário de meses em português (solução alternativa)
+    MESES_PT = {
+        1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
+        5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
+        9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
     }
 
-    // Adicionar evento de clique para todos os campos de número
-    document.addEventListener('DOMContentLoaded', function() {
-        // Adicionar evento de clique para campos existentes
-        const numberInputs = document.querySelectorAll('input[type="number"]');
-        numberInputs.forEach(input => {
-            input.addEventListener('click', autoSelectInput);
-        });
+    # Funções auxiliares
+    def formatar_mes_ano(data):
+        """Formata data em português usando MESES_PT"""
+        try:
+            if not isinstance(data, pd.Timestamp):
+                data = pd.to_datetime(data)
+            return f"{MESES_PT[data.month]} {data.year}"
+        except:
+            return f"{MESES_PT.get(data.month, 'Mês Desconhecido')} {data.year}"
 
-        // Adicionar evento de mutação para novos campos
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.addedNodes) {
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1 && node.querySelector('input[type="number"]')) {
+    def formatar_moeda(valor):
+        """Formata valor monetário no padrão brasileiro"""
+        return f"R$ {valor:,.2f}".replace(",", "_").replace(".", ",").replace("_", ".")
+
+    # Funções principais
+    def load_data():
+        """Carrega os dados do sistema"""
+        return pd.DataFrame(), pd.DataFrame()
+
+    def save_data(metas, resultados):
+        """Salva os dados do sistema"""
+        pass
+
+    def processar_dados():
+        """Processa e exibe os dados do dashboard"""
+        pass
+
+    # Carregar dados
+    metas_df, resultados_df = load_data()
+
+    # Chamar a função principal
+    processar_dados()
+
+    # Adicionar script de seleção automática para campos de número
+    st.markdown("""
+    <script>
+        // Função para selecionar o conteúdo do campo
+        function autoSelectInput(event) {
+            if (event.target.type === 'number') {
+                event.target.select();
+            }
+        }
+
+        // Adiciona o evento de clique para todos os campos de número
+        document.addEventListener('DOMContentLoaded', function() {
+            const numberInputs = document.querySelectorAll('input[type="number"]');
+            numberInputs.forEach(input => {
+                input.addEventListener('click', autoSelectInput);
                             const newInputs = node.querySelectorAll('input[type="number"]');
                             newInputs.forEach(input => {
                                 input.addEventListener('click', autoSelectInput);
@@ -849,6 +900,6 @@ processar_dados()
 # Adicionar versão no rodapé
 st.markdown("""
 <div style='text-align: center; margin-top: 20px; color: #666; font-size: 12px;'>
-Versão 1.2.2.4
+Versão 1.2.2.5 - 27/06/2025 
 </div>
 """, unsafe_allow_html=True)
