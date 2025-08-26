@@ -138,8 +138,8 @@ if st.session_state.get('user_authenticated', False):
                             save_funcionarios(st.session_state.funcionarios_df)
                             st.rerun()
     else:
-        st.info("Nenhum funcionário encontrado com os filtros selecionados.")
-
+        st.markdown("")
+    
     # Chamar a função principal
     processar_dados()
 
@@ -523,8 +523,70 @@ st.markdown("""
         white-space: nowrap;
         z-index: 100;
     }
+    
+    /* Melhora a rolagem horizontal das abas (tablist do Streamlit/BaseWeb) */
+    [role="tablist"] {
+        overflow-x: auto !important;
+        overflow-y: hidden;
+        white-space: nowrap;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        gap: 8px;
+    }
+
+    /* Evita quebra das abas e garante largura mínima clicável */
+    [role="tablist"] > * {
+        flex: 0 0 auto;
+        min-width: max-content;
+    }
+
+    /* Estiliza a barra de rolagem (WebKit) */
+    [role="tablist"]::-webkit-scrollbar {
+        height: 8px;
+    }
+    [role="tablist"]::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 8px;
+    }
+    [role="tablist"]::-webkit-scrollbar-thumb {
+        background: #c7c7c7;
+        border-radius: 8px;
+    }
+    [role="tablist"]::-webkit-scrollbar-thumb:hover {
+        background: #a9a9a9;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+components.html("""
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const enhance = (tl) => {
+    if (!tl || tl.dataset.enhanced === 'true') return;
+    tl.dataset.enhanced = 'true';
+    tl.style.overflowX = 'auto';
+    tl.style.overflowY = 'hidden';
+    tl.addEventListener('wheel', function (e) {
+      // Converte rolagem vertical do mouse em rolagem horizontal
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        tl.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    }, { passive: false });
+  };
+
+  const findAll = () => Array.from(document.querySelectorAll('[role="tablist"]'));
+  findAll().forEach(enhance);
+
+  // Observa mudanças no DOM para re-aplicar em rerenders do Streamlit
+  const obs = new MutationObserver(() => {
+    findAll().forEach(enhance);
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+});
+</script>
+""", height=0)
 
 # Função para formatar data em português
 def formatar_mes_ano(data):
@@ -797,7 +859,7 @@ def render_aba_funcionarios():
                         del st.session_state.excluir_funcionario
                     st.rerun()
     else:
-        st.info("Nenhum funcionário encontrado com os filtros selecionados.")
+        st.markdown("")
     
     # Atualizar contagem de funcionários ativos na sessão
     funcionarios_ativos = st.session_state.funcionarios_df[st.session_state.funcionarios_df['Ativo'] == True]
@@ -1392,6 +1454,6 @@ processar_dados()
 # Adicionar versão no rodapé
 st.markdown("""
 <div style='text-align: center; margin-top: 20px; color: #666; font-size: 12px;'>
-Versão 1.3 - 18/07/2025
+Versão 1.3.1 - 18/07/2025
 </div>
 """, unsafe_allow_html=True)
